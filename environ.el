@@ -256,14 +256,14 @@ set in the new environment."
 (defun environ--eval-script (script)
   "Start a subprocess, execute SCRIPT, and return the resulting env.
 
-SCRIPT can be any sh script. This function appends the 'env'
+SCRIPT can be any sh script. This function appends the `env`
 command to the end of the script, and then returns stdout."
   (with-temp-buffer
-    (let* ((environ-script (s-append "\nenv" script))
-           (ret-code (call-process "sh"
-                                   nil t nil
-                                   shell-command-switch
-                                   environ-script)))
+    (let ((environ-script (s-append "\nenv" script)))
+      (call-process "sh"
+                    nil t nil
+                    shell-command-switch
+                    environ-script)
       (buffer-string))))
 
 (provide 'environ)

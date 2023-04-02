@@ -8,11 +8,14 @@ may define environment variables using shellisms.
 
 ## Table of Contents
 
+- [Installation](#installation)
+- [Example Usage](#example-usage)
 - [API](#api)
   - [environ-set-file `(file-path)`](#environ-set-file-file-path)
   - [environ-unset-file `(file-path)`](#environ-unset-file-file-path)
   - [environ-set-str `(str)`](#environ-set-str-str)
   - [environ-unset-str `(str)`](#environ-unset-str-str)
+  - [environ-get-pairs](#environ-get-pairs)
   - [environ-set-pairs `(pairs)`](#environ-set-pairs-pairs)
   - [environ-unset-pairs `(pairs)`](#environ-unset-pairs-pairs)
   - [environ-get-names](#environ-get-names)

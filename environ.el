@@ -236,30 +236,30 @@ set in the new environment."
 
          ;; TODO: Run the pre-eval hooks
 
-         ;; Evaluate given pairs in a subshell
-         (stdout (environ--eval-script
-                  (environ--pairs-to-script pairs)))
+         ;; Create a shell script from the given pairs
+         (script (environ--pairs-to-script pairs))
 
-         ;; Convert the result into pairs
+         ;; Evaluate the script in a subshell
+         (stdout (environ--eval-script script))
+
+         ;; Convert the script's stdout into pairs
          (out-pairs (-> stdout
                         s-trim
                         s-lines
                         environ--lines-to-pairs))
 
-         ;; TODO: Run the post-eval hooks. Right now this is just the
-         ;; remove-sh-vars function.
+         ;; Run the post-eval hooks
          (new-pairs (environ-remove-sh-vars out-pairs)))
 
-    ;; And return the difference!
+    ;; Return the difference between the initial env and the new env
     (-difference new-pairs old-pairs)))
 
 (defun environ--eval-script (script)
-  "Start a subprocess, execute SCRIPT, and return the resulting env.
-
-SCRIPT can be any sh script. This function appends the `env`
+  "Start a subprocess, execute SCRIPT, and then run `printenv`.
+SCRIPT can be any sh script. This function appends the `printenv`
 command to the end of the script, and then returns stdout."
-  (with-temp-buffer
-    (let ((environ-script (s-append "\nenv" script)))
+  (let ((environ-script (s-append "\nprintenv" script)))
+    (with-temp-buffer
       (call-process "sh"
                     nil t nil
                     shell-command-switch

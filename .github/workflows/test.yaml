@@ -32,9 +32,9 @@ jobs:
 
     - name: Test the project
       run: |
-        eldev -dtT -C test
-        eldev -dtT -C compile --warnings-as-errors
+        eldev -vT test
+        eldev -vT compile --warnings-as-errors
 
     - name: Lint the project
       run: |
-        eldev -p -dtT -C lint
+        eldev -p -vT lint

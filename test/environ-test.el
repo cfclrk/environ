@@ -56,8 +56,12 @@ REL-PATH is a path relative to this project's root."
   "Test running `environ-set-pairs' to set env vars."
   (let ((process-environment '()))
     (environ-set-pairs '(("A" "a") ("B" "'R$%!$KP$'")))
-    (should (-same-items? '("B=R$%!$KP$" "A=a")
-                          process-environment))))
+    (should (-same-items? '("A=a" "B=R$%!$KP$")
+                          process-environment))
+    ;; Test tilde expansion
+    (let ((c-val (expand-file-name "~/foo")))
+      (environ-set-pairs '(("C" "~/foo")))
+      (should (equal c-val (getenv "C"))))))
 
 (ert-deftest environ-unset-pairs ()
   "Test running `environ-unset-pairs' to unset env vars."

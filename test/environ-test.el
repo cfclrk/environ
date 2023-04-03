@@ -23,37 +23,25 @@ REL-PATH is a path relative to this project's root."
   "Test running environ-set-file."
   (let ((process-environment '())
         (test-file (environ-project-file "test/examples/simple")))
-
     (environ-set-file test-file)
-
-    (should (equal "foo"
-                   (getenv "A")))
-    (should (equal "bar"
-                   (getenv "B")))
-    (should (equal "R$%!$KP$"
-                   (getenv "C")))
-    (should (equal "foo-bar"
-                   (getenv "D")))
-    (should (equal (expand-file-name "~/cats")
-                   (getenv "E")))))
+    (should (equal "foo" (getenv "A")))
+    (should (equal "bar" (getenv "B")))
+    (should (equal "R$%!$KP$" (getenv "C")))
+    (should (equal "foo-bar" (getenv "D")))
+    (should (equal (expand-file-name "~/cats") (getenv "E")))))
 
 (ert-deftest environ-unset-file ()
   "Test running `environ-unset-file'."
   (let ((process-environment '("A=a" "B=b" "C=C" "Z=z"))
         (test-file (environ-project-file "test/examples/simple")))
-
     (environ-unset-file test-file)
-
-    (should (equal '("Z=z")
-                   process-environment))))
+    (should (equal '("Z=z") process-environment))))
 
 (ert-deftest environ-set-str ()
   "Test running `environ-set-str'."
   (let ((process-environment '())
         (test-str "A=a\nB=b"))
-
     (environ-set-str test-str)
-
     (should (equal "a" (getenv "A")))
     (should (equal "b" (getenv "B")))))
 
@@ -61,46 +49,29 @@ REL-PATH is a path relative to this project's root."
   "Test running `environ-unset-str'."
   (let ((process-environment '("FOO=foo" "BAR=bar" "CATS=cats"))
         (test-str "FOO=foo\nBAR=bar"))
-
     (environ-unset-str test-str)
-
-    (should (-same-items? '("CATS=cats")
-                          process-environment))))
+    (should (-same-items? '("CATS=cats") process-environment))))
 
 (ert-deftest environ-set-pairs ()
   "Test running `environ-set-pairs' to set env vars."
   (let ((process-environment '()))
-
-    (environ-set-pairs '(("A" "a")
-                     ("B" "'R$%!$KP$'")))
-
+    (environ-set-pairs '(("A" "a") ("B" "'R$%!$KP$'")))
     (should (-same-items? '("B=R$%!$KP$" "A=a")
                           process-environment))))
 
 (ert-deftest environ-unset-pairs ()
   "Test running `environ-unset-pairs' to unset env vars."
   (let ((process-environment '("FOO=foo" "BAR=bar" "BAZ=baz")))
-
-    (environ-unset-pairs '(("FOO" "foo")
-                       ("BAR" "barrr")))
-
-    (should (-same-items? '("BAZ=baz")
-                          process-environment))))
+    (environ-unset-pairs '(("FOO" "foo") ("BAR" "barrr")))
+    (should (-same-items? '("BAZ=baz") process-environment))))
 
 (ert-deftest environ-unset-names ()
   "Test running `environ-unset-names'."
   (let ((process-environment '("FOO=foo" "BAR=bar" "BAZ=baz")))
-
-    (environ-unset-names '("FOO" "BAR"))
-
+    (environ-unset-names '("FOO" "BAR" "CATS"))
     (should (equal nil (getenv "FOO")))
     (should (equal nil (getenv "BAR")))
     (should (equal "baz" (getenv "BAZ")))
-    (should (equal '("BAZ=baz") process-environment))
-
-    ;; Unset names that do not exist
-    (environ-unset-names '("CATS" "HATS"))
-
     (should (equal '("BAZ=baz") process-environment))))
 
 (ert-deftest environ--set-pair ()
@@ -108,7 +79,6 @@ REL-PATH is a path relative to this project's root."
   (let ((process-environment '()))
     (environ--set-pair '("FOO" "foo"))
     (should (equal "foo" (getenv "FOO")))
-
     (environ--set-pair '("FOO" "1"))
     (should (equal "1" (getenv "FOO")))))
 
@@ -118,32 +88,29 @@ REL-PATH is a path relative to this project's root."
     (environ-unset-name "🐕")
     (should (equal nil (getenv "🐈")))))
 
-(ert-deftest environ--eval-pairs ()
-  "Test running `environ--eval-pairs'."
-
-  ;; Should be able to set simple values
+(ert-deftest environ--eval-pairs-simple ()
+  "We should be able to set simple values."
   (let* ((process-environment '())
          (evald-pairs (environ--eval-pairs '(("FOO" "foo")
-                                        ("BAR" "bar")))))
-    (should (equal '(("FOO" "foo")
-                    ("BAR" "bar"))
-                   evald-pairs)))
+                                             ("BAR" "bar")))))
+    (should (-same-items? '(("FOO" "foo") ("BAR" "bar"))
+                          evald-pairs))))
 
-  ;; Should be able to interpolate values
+(ert-deftest environ--eval-pairs-interpolate ()
+  "We should be able to interpolate values."
   (let* ((process-environment '())
          (evald-pairs (environ--eval-pairs '(("FOO" "foo")
-                                        ("BAR" "$FOO-bar")))))
-    (should (equal '(("FOO" "foo")
-                    ("BAR" "foo-bar"))
-                   evald-pairs)))
+                                             ("BAR" "$FOO-bar")))))
+    (should (-same-items? '(("FOO" "foo") ("BAR" "foo-bar"))
+                          evald-pairs))))
 
-  ;; Should be able to surround a value in single quotes to make it a literal
-  ;; value (i.e. prevent interpolation)
+(ert-deftest environ--eval-pairs-quotes ()
+  "Surrounding value with single quotes should prevent intepolation."
   (let* ((process-environment '())
          (evald-pairs (environ--eval-pairs '(("FOO" "'f$oo'")
-                                         ("B" "'R$%!$KP$'")))))
-    (should (-same-items? '(("FOO" "f$oo")
-                            ("B" "R$%!$KP$"))
+                                             ("B" "'R$%!$KP$'")))))
+    (should (-same-items? '(("FOO" "f$oo") ("B" "R$%!$KP$"))
                           evald-pairs))))
+
 
 ;;; environ-test.el ends here

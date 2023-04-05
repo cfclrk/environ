@@ -136,12 +136,16 @@ PAIRS is a list of pairs, where each pair is an environment variable name and
 value.
 
 ```emacs-lisp
-(environ-set-pairs '(("FOO" "foo")
-                 ("BAR" "$FOO-bar")))
+(environ-set-pairs '(("A" "foo")
+                     ("B" "$A-bar")))
+(getenv "A") ;; => "foo"
+(getenv "B") ;; => "foo-bar"
 
 ;; Prevent interpolation using single quotes
-(environ-set-pairs '(("A" "a")
-                 ("B" "'$FOO-bar'")))
+(environ-set-pairs '(("A" "foo")
+                     ("B" "'$A-bar'")))
+(getenv "A") ;; => "foo"
+(getenv "B") ;; => "$A-bar"
 ```
 
 ### environ-unset-pairs `(pairs)`
@@ -153,8 +157,10 @@ value. The value in each pair doesn't matter; each environment variable will be
 unset regardless of its value.
 
 ```emacs-lisp
-(environ-unset-pairs '(("FOO" "foo")
-                   ("BAR" "bar")))
+(getenv "A") ;; => "foo"
+(environ-unset-pairs '(("A" "foo")
+                       ("B" "bar")))
+(getenv "A") ;; => nil
 ```
 
 ### environ-get-names
@@ -163,8 +169,7 @@ Return a list of all current environment variable names.
 
 ```emacs-lisp
 (environ-get-names)
-
-;; => ("HOME" "FOO" "BAR")
+;; => ("HOME" "FOO" "BAR" ...)
 ```
 
 ### environ-unset-names `(names)`
@@ -175,7 +180,9 @@ NAMES is a list of environment variable names which may or may not be currently
 set. This function removes each name from `process-environment` if it is set.
 
 ```emacs-lisp
-(environ-unset-names '("FOO" "BAR"))
+(getenv "A") ;; => "foo"
+(environ-unset-names '("A" "B"))
+(getenv "A") ;; => nil
 ```
 
 ### environ-unset-name `(name)`

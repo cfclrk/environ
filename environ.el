@@ -63,17 +63,15 @@
 ;;;###autoload
 (defun environ-set-file (file-path)
   "Set environment variables defined in the file at FILE-PATH.
-
-When used interactively, prompts for the file to load. The prompt
-begins in `environ-dir'. When used from elisp, FILE-PATH can
-either be absolute or relative to `default-directory'."
+When used interactively, prompts for the file to load. The prompt begins in
+`environ-dir'. When used from elisp, FILE-PATH can either be absolute or
+relative to `default-directory'."
   (interactive (list (read-file-name "ENV file: " environ-dir)))
   (environ-set-str (f-read-text file-path)))
 
 ;;;###autoload
 (defun environ-unset-file (file-path)
   "Unset the environment variables defined in FILE-PATH.
-
 See the documentation for `environ-set-file'."
   (interactive (list (read-file-name "ENV file: " environ-dir)))
   (environ-unset-str (f-read-text file-path)))
@@ -82,20 +80,17 @@ See the documentation for `environ-set-file'."
 
 (defun environ-set-str (str)
   "Set environment variables defined by the given string STR.
-
-Parse STR like an env file. STR is split into newline-delimited
-lines, where each line is a key/value pair."
+Parse STR like an env file. STR is split into newline-delimited lines,
+where each line is a key/value pair."
   (let* ((lines (s-lines (s-trim str)))
          (pairs (environ--lines-to-pairs lines)))
     (environ-set-pairs pairs)))
 
 (defun environ-unset-str (str)
   "Unset environment variables defined by string STR.
-
-Parse STR like an env file. STR is split into newline-delimited
-pairs, where each line is a key/value pair. The value of each
-pair is discarded, as the environment variable will be unset
-regardless of its value."
+Parse STR like an env file. STR is split into newline-delimited pairs,
+where each line is a key/value pair. The value of each pair is discarded,
+as the environment variable will be unset regardless of its value."
   (let* ((lines (s-lines (s-trim str)))
          (pairs (environ--lines-to-pairs lines)))
     (environ-unset-pairs pairs)))
@@ -108,7 +103,6 @@ regardless of its value."
 
 (defun environ-set-pairs (pairs)
   "Set environment variables defined by the given PAIRS.
-
 PAIRS is a list of pairs, where each pair is an environment
 variable name and value."
   (-> pairs
@@ -117,10 +111,9 @@ variable name and value."
 
 (defun environ-unset-pairs (pairs)
   "Unset the environment variables defined in the given PAIRS.
-
-PAIRS is a list of pairs, where each pair is an environment
-variable name and value. The value in each pair doesn't matter;
-each environment variable will be unset regardless of its value."
+PAIRS is a list of pairs, where each pair is an environment variable name
+and value. The value in each pair doesn't matter; each environment variable
+will be unset regardless of its value."
   (environ-unset-names (-map 'car pairs)))
 
 ;;; Names
@@ -134,9 +127,9 @@ each environment variable will be unset regardless of its value."
 (defun environ-unset-names (names)
   "Unset environment variables with the given NAMES.
 
-NAMES is a list of environment variable names which may or may
-not be currently set. This function removes each name from
-`process-environment' if it is set."
+NAMES is a list of environment variable names which may or may not be
+currently set. This function removes each name from `process-environment'
+if it is set."
   (-each names #'environ-unset-name))
 
 ;;;###autoload
@@ -144,15 +137,14 @@ not be currently set. This function removes each name from
   "Unset the environment variable NAME.
 
 Unset the given environment variable by removing it from
-`process-environment' if it is there. Note that calling `setenv'
-with a prefix argument can unset a variable by setting its value
-to nil, but the variable remains in `process-environment'. This
-function completely removes the variable from
-`process-environment'.
+`process-environment' if it is there. Note that calling `setenv' with a
+prefix argument can unset a variable by setting its value to nil, but the
+variable remains in `process-environment'. This function completely removes
+the variable from `process-environment'.
 
-Neither Emacs nor bash directly support non-ASCII characters as
-environment variables (see [The Open Group][1]), but Emacs can
-fake it by using escaped sequences of unicode code points.
+Neither Emacs nor bash directly support non-ASCII characters as environment
+variables (see [The Open Group][1]), but Emacs can fake it by using escaped
+sequences of unicode code points.
 
 [1]: https://pubs.opengroup.org/onlinepubs/9699919799/"
   (interactive (list (completing-read "" (environ-get-names))))
@@ -179,8 +171,8 @@ fake it by using escaped sequences of unicode code points.
 
 (defun environ-remove-sh-vars (pairs)
   "Remove some from PAIRS.
-The sh shell initializes these environment varibales. This is the
-default post-eval filter."
+The sh shell initializes these environment varibales. This is the default
+post-eval filter."
   (let ((ignored-environ-vars '("DISPLAY"
                                 "PWD"
                                 "SHLVL"

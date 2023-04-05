@@ -2,7 +2,7 @@
 
 ;; Author: Chris Clark <cfclrk@gmail.com>
 ;; Version: 0.1
-;; Package-Requires: ((dash "2.17.0") (f "0.20.0") (s "1.12.0"))
+;; Package-Requires: ((emacs "24.1") (dash "2.17.0") (f "0.20.0") (s "1.12.0"))
 ;; URL: https://github.com/cfclrk/env
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,7 @@
 
 ;;; Options
 
-(defgroup env ()
+(defgroup environ ()
   "Utilities to set and unset environment variables in Emacs."
   :group 'environment
   :prefix "environ-"
@@ -179,14 +179,12 @@ fake it by using escaped sequences of unicode code points.
 
 (defun environ-remove-sh-vars (pairs)
   "Remove some from PAIRS.
-
-The sh shell initializes these environment varibales.
-
-This is the default post-eval filter."
+The sh shell initializes these environment varibales. This is the
+default post-eval filter."
   (let ((ignored-environ-vars '("DISPLAY"
-                            "PWD"
-                            "SHLVL"
-                            "_")))
+                                "PWD"
+                                "SHLVL"
+                                "_")))
     (-filter
      (lambda (pair) (not (member (car pair) ignored-environ-vars)))
      pairs)))
@@ -201,23 +199,30 @@ This is the default post-eval filter."
 
 ;;;; Conversion functions
 
-(defun environ--pairs-to-script (pairs)
-  "Turn PAIRS into a sh script."
-  (->> pairs
-       (--map (s-join "=" it))
-       (environ--lines-to-script)))
-
-(defun environ--lines-to-script (lines)
-  "Turn LINES into a sh script."
-  (->> lines
-      (--map (s-prepend "export " it))
-      (s-join "\n")))
-
 (defun environ--lines-to-pairs (lines)
   "Return a list of pairs of LINES."
   (--map (s-split "=" it) lines))
 
-;;;; Eval functions
+;;;; Shell script evaluation
+
+(defun environ--make-sh-script (pairs)
+  "Turn PAIRS into a sh script.
+TODO: handle integer values"
+  (->> pairs
+       (--map (s-join "=" it))
+       (--map (s-prepend "export " it))
+       (s-join "\n")
+       (s-append "\nprintenv\n")))
+
+(defun environ--eval-script (script)
+  "Execute SCRIPT in an sh shell.
+Returns stdout."
+  (with-temp-buffer
+    (call-process "bash"
+                  nil t nil
+                  shell-command-switch
+                  script)
+    (buffer-string)))
 
 (defun environ--eval-pairs (pairs)
   "Eval PAIRS.
@@ -229,15 +234,14 @@ This is the default post-eval filter."
 
 The result is diffed against the captured process environment.
 
-Returns the list of pairs of environment variables that should be
-set in the new environment."
+Returns the list of pairs."
   (let* (;; Capture the current environment
          (old-pairs (environ--lines-to-pairs process-environment))
 
          ;; TODO: Run the pre-eval hooks
 
          ;; Create a shell script from the given pairs
-         (script (environ--pairs-to-script pairs))
+         (script (environ--make-sh-script pairs))
 
          ;; Evaluate the script in a subshell
          (stdout (environ--eval-script script))
@@ -253,18 +257,6 @@ set in the new environment."
 
     ;; Return the difference between the initial env and the new env
     (-difference new-pairs old-pairs)))
-
-(defun environ--eval-script (script)
-  "Start a subprocess, execute SCRIPT, and then run `printenv`.
-SCRIPT can be any sh script. This function appends the `printenv`
-command to the end of the script, and then returns stdout."
-  (let ((environ-script (s-append "\nprintenv" script)))
-    (with-temp-buffer
-      (call-process "sh"
-                    nil t nil
-                    shell-command-switch
-                    environ-script)
-      (buffer-string))))
 
 (provide 'environ)
 ;;; environ.el ends here

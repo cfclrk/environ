@@ -3,8 +3,8 @@
 An Emacs package that provides some helpful functions for working with
 environment variables and env files.
 
-This package uses an `sh` subshell to evaluate environment variables. So, you
-may define environment variables using shellisms.
+This package expands variable declarations using a `sh` subprocess. So, you may
+define environment variables using shellisms.
 
 ## Table of Contents
 

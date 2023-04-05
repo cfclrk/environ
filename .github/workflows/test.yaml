@@ -8,18 +8,16 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-    continue-on-error: ${{matrix.emacs_version == 'snapshot'}}
-
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        emacs_version: ['28.2', 'snapshot']
+        os: [ubuntu-latest, macOS-latest]
 
     steps:
     - name: Set up Emacs
       uses: purcell/setup-emacs@master
       with:
-        version: ${{matrix.emacs_version}}
+        version: "28.2"
 
     - name: Install Eldev
       run: |

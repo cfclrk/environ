@@ -3,8 +3,8 @@
 An Emacs package that provides some helpful functions for working with
 environment variables and env files.
 
-This package expands variable declarations using a `sh` subprocess. So, you may
-define environment variables using shellisms.
+This package expands variable declarations using a `bash` subprocess. So, you
+may define environment variables using shellisms.
 
 ## Table of Contents
 
@@ -28,7 +28,9 @@ define environment variables using shellisms.
 
 ## Installation
 
-This package is currently not available in a package archive, so for now, you need to install from source. This can be achieved easily with e.g. [straight][], [elpaca][], or [package-vc-install][].
+This package is currently not available in a package archive, so for now, you
+need to install from source. This can be achieved easily with e.g. [straight][],
+[elpaca][], or [package-vc-install][].
 
 For example, using elpaca:
 
@@ -57,9 +59,12 @@ BAZ=$(pwd)
 
 Now, run `M-x environ-set-file`, which will prompt for a file. Navigate to
 `~/.env/foo` and press Enter. Voilà, you have three new environment variables
-set in Emacs. Verify you can retrieve them with `M-x getenv`. Unset them with `M-x environ-unset-file` (this will again prompt for a file).
+set in Emacs. Verify you can retrieve them with `M-x getenv`. Unset them with
+`M-x environ-unset-file` (this will again prompt for a file).
 
-Besides setting (and unsetting) environment variables from env files, this package provides an API for some common operations on environment variables. Examples below.
+Besides setting (and unsetting) environment variables from env files, this
+package provides an API for some common operations on environment variables.
+Examples below.
 
 ## API
 
@@ -68,8 +73,8 @@ Besides setting (and unsetting) environment variables from env files, this packa
 **[interactive]** Set environment variables defined in the file at FILE-PATH.
 
 When used interactively, prompts for the file to load. The prompt begins in
-`environ-dir`. When used from elisp, FILE-PATH can either be absolute or relative
-to `default-directory`.
+`environ-dir`. When used from elisp, FILE-PATH can either be absolute or
+relative to `default-directory`.
 
 The env file at FILE-PATH should be in the standard env file format.
 
@@ -226,7 +231,9 @@ variables in an `org` document using a table:
 
 ## How it Works
 
-When any of the public functions are called, the input is parsed into a list of pairs (the IR), assembled into a shell script, and then the shell script is run in an `sh` shell and the output is captured.
+When any of the public functions are called, the input is parsed into a list of
+pairs (the IR), assembled into a shell script, and then the shell script is run
+in an `sh` shell and the output is captured.
 
 The way in:
 

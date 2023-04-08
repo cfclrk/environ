@@ -48,15 +48,18 @@
   :group 'env
   :type 'directory)
 
-(defcustom environ-pre-eval-hook nil
-  "List of functions to run before subshell evaluation."
+(defcustom environ-pre-eval-functions nil
+  "List of functions to run before shell evaluation.
+Each function takes a list of pairs and returns a list of pairs."
   :group 'env
   :type 'hook)
 
-(defcustom environ-post-eval-hook nil
-  "List of functions to run after subshell evaluation."
+(defcustom environ-post-eval-functions
+  '(environ-post-eval-ignore-default-bash-vars)
+  "List of functions to run after shell evaluation.
+Each function takes a list of pairs and returns an updated list of pairs."
   :group 'env
-  :type 'hook)
+  :type '(hook :options (environ-post-eval-ignore-default-bash-vars)))
 
 ;;; Files
 
@@ -82,18 +85,16 @@ See the documentation for `environ-set-file'."
   "Set environment variables defined by the given string STR.
 Parse STR like an env file. STR is split into newline-delimited lines,
 where each line is a key/value pair."
-  (let* ((lines (s-lines (s-trim str)))
-         (pairs (environ--lines-to-pairs lines)))
-    (environ-set-pairs pairs)))
+  (environ-set-pairs
+   (environ--str-to-pairs str)))
 
 (defun environ-unset-str (str)
   "Unset environment variables defined by string STR.
 Parse STR like an env file. STR is split into newline-delimited pairs,
 where each line is a key/value pair. The value of each pair is discarded,
 as the environment variable will be unset regardless of its value."
-  (let* ((lines (s-lines (s-trim str)))
-         (pairs (environ--lines-to-pairs lines)))
-    (environ-unset-pairs pairs)))
+  (environ-unset-pairs
+   (environ--str-to-pairs str)))
 
 ;;; Pairs
 
@@ -106,8 +107,14 @@ as the environment variable will be unset regardless of its value."
 PAIRS is a list of pairs, where each pair is an environment
 variable name and value."
   (-> pairs
-      (environ--eval-pairs)
+      (environ--eval-and-diff)
       (-each #'environ--set-pair)))
+
+(defun environ--set-pair (pair)
+  "Set an environment variable PAIR."
+  (let ((name (car pair))
+        (val (car (cdr pair))))
+    (setenv name val)))
 
 (defun environ-unset-pairs (pairs)
   "Unset the environment variables defined in the given PAIRS.
@@ -157,47 +164,61 @@ sequences of unicode code points.
               (-remove-at index process-environment))
       process-environment)))
 
-;;; Pre-eval filters
-
-;; Some pre-made post-eval filters. A pre-eval filter is a function that takes a
-;; list of pairs and returns a list of pairs.
-
-;; TODO!
-
-;;; Post-eval filters
-
-;; Some pre-made post-eval filters. A post-eval filter is a function that takes
-;; a list of pairs and returns a list of pairs.
-
-(defun environ-remove-sh-vars (pairs)
-  "Remove some from PAIRS.
-The sh shell initializes these environment varibales. This is the default
-post-eval filter."
-  (let ((ignored-environ-vars '("DISPLAY"
-                                "PWD"
-                                "SHLVL"
-                                "_")))
-    (-filter
-     (lambda (pair) (not (member (car pair) ignored-environ-vars)))
-     pairs)))
-
-;;; Private functions
-
-(defun environ--set-pair (pair)
-  "Set an environment variable PAIR."
-  (let ((name (car pair))
-        (val (car (cdr pair))))
-    (setenv name val)))
-
 ;;;; Conversion functions
+
+(defun environ--str-to-pairs (str)
+  "Parse STR into a list of pairs."
+  (-> str
+      s-trim
+      s-lines
+      environ--lines-to-pairs))
 
 (defun environ--lines-to-pairs (lines)
   "Return a list of pairs of LINES."
   (--map (s-split "=" it) lines))
 
+;;; Pre-eval  functions
+
+;;; Post-eval functions
+
+;; Some pre-made post-eval functions. A post-eval filter is a function that takes
+;; a list of pairs and returns a list of pairs.
+
+(defun environ-post-eval-ignore-default-bash-vars (pairs)
+  "Remove DISPLAY, PWD, SHLVL, and _ from PAIRS.
+Bash initializes these environment varibales in every bash process. If any
+of these are different in the bash subprocess, it's probably not something
+you care about. This is the default post-eval function."
+  (let ((ignored-vars '("DISPLAY" "PWD" "SHLVL" "_")))
+    (-filter
+     (lambda (pair) (not (member (car pair) ignored-vars)))
+     pairs)))
+
 ;;;; Shell script evaluation
 
-(defun environ--make-sh-script (pairs)
+(defun environ--eval-and-diff (pairs)
+  "Eval PAIRS and diff the result with the current environment.
+This runs all pre-eval-functions and post-eval-functions."
+  (let ((cur-pairs (environ--lines-to-pairs process-environment))
+        (new-pairs (environ--eval-with-pre-post-functions pairs)))
+    (-difference new-pairs cur-pairs)))
+
+(defun environ--eval-with-pre-post-functions (pairs)
+  "Eval PAIRS along with all pre-eval and post-eval functions."
+  (->> pairs
+       (funcall (apply '-compose environ-pre-eval-functions))
+       (environ--eval)
+       (funcall (apply '-compose environ-post-eval-functions))))
+
+(defun environ--eval (pairs)
+  "Eval PAIRS in a bash subprocess.
+Return a list of pairs representing the resulting subprocess environment."
+  (-> pairs
+      environ--build-script
+      environ--run-script
+      environ--str-to-pairs))
+
+(defun environ--build-script (pairs)
   "Turn PAIRS into a sh script.
 TODO: handle integer values"
   (->> pairs
@@ -206,49 +227,14 @@ TODO: handle integer values"
        (s-join "\n")
        (s-append "\nprintenv\n")))
 
-(defun environ--eval-script (script)
-  "Execute SCRIPT in an sh shell.
-Returns stdout."
+(defun environ--run-script (script)
+  "Run SCRIPT in a bash subprocess. Return stdout."
   (with-temp-buffer
     (call-process "bash"
                   nil t nil
                   shell-command-switch
                   script)
     (buffer-string)))
-
-(defun environ--eval-pairs (pairs)
-  "Eval PAIRS.
-
-- Capture the current process environment
-- Run pre-eval hooks
-- Evaluate given pairs in a subshell
-- Run post-eval hooks
-
-The result is diffed against the captured process environment.
-
-Returns the list of pairs."
-  (let* (;; Capture the current environment
-         (old-pairs (environ--lines-to-pairs process-environment))
-
-         ;; TODO: Run the pre-eval hooks
-
-         ;; Create a shell script from the given pairs
-         (script (environ--make-sh-script pairs))
-
-         ;; Evaluate the script in a subshell
-         (stdout (environ--eval-script script))
-
-         ;; Convert the script's stdout into pairs
-         (out-pairs (-> stdout
-                        s-trim
-                        s-lines
-                        environ--lines-to-pairs))
-
-         ;; Run the post-eval hooks
-         (new-pairs (environ-remove-sh-vars out-pairs)))
-
-    ;; Return the difference between the initial env and the new env
-    (-difference new-pairs old-pairs)))
 
 (provide 'environ)
 ;;; environ.el ends here

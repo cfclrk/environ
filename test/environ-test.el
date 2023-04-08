@@ -79,7 +79,7 @@ REL-PATH is a path relative to this project's root."
     (should (equal '("BAZ=baz") process-environment))))
 
 (ert-deftest environ--set-pair ()
-  "Test running `environ--export-pair' to set a single environment variable."
+  "Test running `environ--set-pair' to set a single environment variable."
   (let ((process-environment '()))
     (environ--set-pair '("FOO" "foo"))
     (should (equal "foo" (getenv "FOO")))
@@ -87,32 +87,53 @@ REL-PATH is a path relative to this project's root."
     (should (equal "1" (getenv "FOO")))))
 
 (ert-deftest environ-unset-name ()
-  (let ((process-environment '("\360\237\220\225=\360\237\220\210")))
-    (should (equal "🐈" (getenv "🐕")))
-    (environ-unset-name "🐕")
-    (should (equal nil (getenv "🐈")))))
+  (let ((process-environment '("\342\235\244\357\270\217=\360\237\220\222"
+                               "FOO=foo")))
+    (should (equal "🐒" (getenv "❤️")))
+    (environ-unset-name "❤️")
+    (should (equal nil (getenv "❤️")))
+    (should (equal "foo" (getenv "FOO")))
+    (environ-unset-name "FOO")
+    (should (equal nil (getenv "FOO")))))
 
-(ert-deftest environ--eval-pairs-simple ()
+(let ((process-environment '()))
+  (environ--eval-and-diff '(("FOO" "~/foo")
+                            ("BAR" "bar"))))
+
+(ert-deftest environ--eval-and-diff-simple ()
   "We should be able to set simple values."
   (let* ((process-environment '())
-         (evald-pairs (environ--eval-pairs '(("FOO" "foo")
-                                             ("BAR" "bar")))))
+         (evald-pairs (environ--eval-and-diff '(("FOO" "foo")
+                                                ("BAR" "bar")))))
     (should (-same-items? '(("FOO" "foo") ("BAR" "bar"))
                           evald-pairs))))
+
+(ert-deftest environ--eval-and-diff-with-pre-functions ()
+  (let ((process-environment '())
+        (environ-pre-eval-functions '((lambda (pairs)
+                                        (cons '("A" "a") pairs))
+                                      (lambda (pairs)
+                                        (cons '("B" "b") pairs)))))
+    (should (-same-items? '(("A" "a")
+                            ("B" "b")
+                            ("FOO" "foo")
+                            ("BAR" "bar"))
+             (environ--eval-and-diff
+              '(("FOO" "foo") ("BAR" "bar")))))))
 
 (ert-deftest environ--eval-pairs-interpolate ()
   "We should be able to interpolate values."
   (let* ((process-environment '())
-         (evald-pairs (environ--eval-pairs '(("FOO" "foo")
-                                             ("BAR" "$FOO-bar")))))
+         (evald-pairs (environ--eval-and-diff '(("FOO" "foo")
+                                                ("BAR" "$FOO-bar")))))
     (should (-same-items? '(("FOO" "foo") ("BAR" "foo-bar"))
                           evald-pairs))))
 
 (ert-deftest environ--eval-pairs-quotes ()
   "Surrounding value with single quotes should prevent intepolation."
   (let* ((process-environment '())
-         (evald-pairs (environ--eval-pairs '(("FOO" "'f$oo'")
-                                             ("B" "'R$%!$KP$'")))))
+         (evald-pairs (environ--eval-and-diff '(("FOO" "'f$oo'")
+                                                ("B" "'R$%!$KP$'")))))
     (should (-same-items? '(("FOO" "f$oo") ("B" "R$%!$KP$"))
                           evald-pairs))))
 

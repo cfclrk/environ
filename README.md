@@ -3,8 +3,7 @@
 An Emacs package that provides some helpful functions for working with
 environment variables and env files.
 
-This package expands variable declarations using a `bash` subprocess. So, you
-may define environment variables using shellisms.
+This package uses a bash subprocess to fully expand variables, which means you can leverage the power of bash to define variables.
 
 ## Table of Contents
 
@@ -63,7 +62,7 @@ set in Emacs. Verify you can retrieve them with `M-x getenv`. Unset them with
 `M-x environ-unset-file` (this will again prompt for a file).
 
 Besides setting (and unsetting) environment variables from env files, this
-package provides an API for some common operations on environment variables.
+package provides an API for common operations with environment variables.
 Examples below.
 
 ## API
@@ -238,27 +237,27 @@ variables in an `org` document using a table:
 
 ## How it Works
 
-When any of the public functions are called, the input is parsed into a list of
-pairs (the IR), assembled into a shell script, and then the shell script is run
-in an `sh` shell and the output is captured.
+This package works by evaluating the provided input in a bash subprocess,
+and then returning the difference between current environment and the subprocess
+environment.
 
-The way in:
+You can think of each function in terms of two phases: the way in, and the way out. On the way in, input is parsed into a list of pairs (the IR) if it isn't already in that form. Then, all pre-eval-functions (if any) are run, which may update the IR. The IR is then assembled into a bash script, executed, and then the result of running `printenv` in the bash subprocess is returned.
 
 ```mermaid
 flowchart LR
     input -- parse --> IR
-    IR -- pre-eval-hooks --> IR
-    IR -- assemble --> shell-script
-    shell-script -- invoke-shell --> output
+    IR -- pre-eval-functions --> IR
+    IR -- build-script --> bash-script
+    bash-script -- invoke --> stdout
 ```
 
-The way out:
+On the way out, we start with the stdout returned by running `printenv` in the bash process. The output is parsed back into a list of pairs (the IR) and all post-eval functions (if any) are run, which may update the IR. Finally, each pair is set in the current `process-environment`, making them environment variables in the Emacs process.
 
 ```mermaid
 flowchart LR
-  output -- parse --> IR
-  IR -- post-eval-hooks --> IR
-  IR -- export --> done
+  stdout -- parse --> IR
+  IR -- post-eval-functions --> IR
+  IR -- setenv --> done
 ```
 
 ## See Also

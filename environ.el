@@ -55,11 +55,11 @@ Each function takes a list of pairs and returns a list of pairs."
   :type 'hook)
 
 (defcustom environ-post-eval-functions
-  '(environ-post-eval-ignore-default-bash-vars)
+  '(environ-post-eval-ignore-bash-vars)
   "List of functions to run after shell evaluation.
 Each function takes a list of pairs and returns an updated list of pairs."
   :group 'env
-  :type '(hook :options (environ-post-eval-ignore-default-bash-vars)))
+  :type '(hook :options (environ-post-eval-ignore-bash-vars)))
 
 ;;; Files
 
@@ -147,13 +147,7 @@ Unset the given environment variable by removing it from
 `process-environment' if it is there. Note that calling `setenv' with a
 prefix argument can unset a variable by setting its value to nil, but the
 variable remains in `process-environment'. This function completely removes
-the variable from `process-environment'.
-
-Neither Emacs nor bash directly support non-ASCII characters as environment
-variables (see [The Open Group][1]), but Emacs can fake it by using escaped
-sequences of unicode code points.
-
-[1]: https://pubs.opengroup.org/onlinepubs/9699919799/"
+the variable from `process-environment'."
   (interactive (list (completing-read "" (environ-get-names))))
   (let* ((encoded-name (if (multibyte-string-p name)
                            (encode-coding-string name locale-coding-system t)
@@ -184,7 +178,7 @@ sequences of unicode code points.
 ;; Some pre-made post-eval functions. A post-eval filter is a function that takes
 ;; a list of pairs and returns a list of pairs.
 
-(defun environ-post-eval-ignore-default-bash-vars (pairs)
+(defun environ-post-eval-ignore-bash-vars (pairs)
   "Remove DISPLAY, PWD, SHLVL, and _ from PAIRS.
 Bash initializes these environment varibales in every bash process. If any
 of these are different in the bash subprocess, it's probably not something

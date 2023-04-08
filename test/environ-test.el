@@ -84,7 +84,9 @@ REL-PATH is a path relative to this project's root."
     (environ--set-pair '("FOO" "foo"))
     (should (equal "foo" (getenv "FOO")))
     (environ--set-pair '("FOO" "1"))
-    (should (equal "1" (getenv "FOO")))))
+    (should (equal "1" (getenv "FOO")))
+    (environ--set-pair '("❤️" "🐒"))
+    (should (equal "🐒" (getenv "❤️")))))
 
 (ert-deftest environ-unset-name ()
   (let ((process-environment '("\342\235\244\357\270\217=\360\237\220\222"
@@ -114,6 +116,20 @@ REL-PATH is a path relative to this project's root."
                                         (cons '("A" "a") pairs))
                                       (lambda (pairs)
                                         (cons '("B" "b") pairs)))))
+    (should (-same-items? '(("A" "a")
+                            ("B" "b")
+                            ("FOO" "foo")
+                            ("BAR" "bar"))
+             (environ--eval-and-diff
+              '(("FOO" "foo") ("BAR" "bar")))))))
+
+(ert-deftest environ--eval-and-diff-with-post-functions ()
+  (let ((process-environment '())
+        (environ-post-eval-functions '(environ-post-eval-ignore-bash-vars
+                                       (lambda (pairs)
+                                        (cons '("A" "a") pairs))
+                                       (lambda (pairs)
+                                         (cons '("B" "b") pairs)))))
     (should (-same-items? '(("A" "a")
                             ("B" "b")
                             ("FOO" "foo")

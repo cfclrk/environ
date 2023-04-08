@@ -75,11 +75,9 @@ When used interactively, prompts for the file to load. The prompt begins in
 `environ-dir`. When used from elisp, FILE-PATH can either be absolute or
 relative to `default-directory`.
 
-The env file at FILE-PATH should be in the standard env file format.
-
 ```emacs-lisp
 (environ-set-file
- (expand-file-name "~/.env/foo"))
+  (expand-file-name "~/.env/foo"))
 ```
 
 ### environ-unset-file `(file-path)`
@@ -102,6 +100,8 @@ each line is a key/value pair.
 
 ```emacs-lisp
 (environ-set-str "FOO=foo\nBAR=bar")
+(getenv "FOO") ;; => "foo"
+(getenv "BAR") ;; => "bar"
 ```
 
 ### environ-unset-str `(str)`
@@ -114,6 +114,8 @@ discarded, as the environment variable will be unset regardless of its value.
 
 ```emacs-lisp
 (environ-unset-str "FOO=foo\nBAR=bar")
+(getenv "FOO") ;; => nil
+(getenv "BAR") ;; => nil
 ```
 
 ### environ-get-pairs
@@ -189,21 +191,15 @@ set. This function removes each name from `process-environment` if it is set.
 **[interactive]** Unset the environment variable NAME.
 
 Unset the given environment variable by removing it from `process-environment`
-if it is there. Note that calling `setenv` with a prefix argument can 'unset' a
+if it is there. Note that calling `setenv` with a prefix argument can unset a
 variable by setting its value to nil, but the variable remains in
 `process-environment`. This function completely removes the variable from
 `process-environment`.
 
-Neither Emacs nor bash directly support non-ASCII characters as environment
-variables (see [The Open Group][tog]), but Emacs can fake it by using escaped
-sequences of unicode code points.
-
-[tog]: https://pubs.opengroup.org/onlinepubs/9699919799/
-
 ## File Format
 
 Each line in an env file must be in a `KEY=VALUE` format, with one entry per
-line. This package invokes an `sh` shell to interpret the file, so shellisms
+line. This package invokes an `bash` shell to interpret the file, so shellisms
 should work (like `~` expansion or using single quotes to prevent variable
 interpolation).
 

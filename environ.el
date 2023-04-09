@@ -102,7 +102,7 @@ where each line is a key/value pair. The value of each pair is discarded,
 as the environment variable will be unset regardless of its value."
   (-> str
       environ--str-to-pairs
-      environ-unset-str))
+      environ-unset-pairs))
 
 ;;; Pairs
 

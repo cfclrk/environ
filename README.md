@@ -214,26 +214,28 @@ they are run interactively. Defauts to `(expand-file-name "~/")`.
 
 A list of functions to run before shell evaluation.
 
-Each function takes a list of pairs and returns an updated list of pairs.
+Each function takes a list of pairs and returns an updated list of pairs. Defaults to `nil`.
 
 ```emacs-lisp
-(setq environ-pre-eval-functions '((lambda (pairs)
-                                     (cons '("A" "a") pairs))
-                                   (lambda (pairs)
-                                     (cons '("B" "b") pairs))))
+(setq environ-pre-eval-functions
+      '((lambda (pairs)
+          (cons '("A" "a") pairs))
+        (lambda (pairs)
+          (cons '("B" "b") pairs))))
 ```
 
 ### environ-post-eval-functions
 
 A list of functions to run after shell evaluation.
 
-Each function takes a list of pairs and returns an updated list of pairs.
+Each function takes a list of pairs and returns an updated list of pairs. Defaults to `'(environ-ignore-bash-vars)`.
 
 ```emacs-lisp
-(setq environ-post-eval-functions '((lambda (pairs)
-                                      (cons '("A" "a") pairs))
-                                    (lambda (pairs)
-                                      (cons '("B" "b") pairs))))
+(setq environ-post-eval-functions
+      '((lambda (pairs)
+          (cons '("A" "a") pairs))
+        (lambda (pairs)
+          (cons '("B" "b") pairs))))
 ```
 
 ## File Format
@@ -287,15 +289,23 @@ flowchart LR
     script -- run script --> stdout
 ```
 
-On the way out, we start with the stdout that was produced by running `printenv` in the bash process. The output is parsed back into a list of pairs (the IR) and all post-eval functions (if any) are run, which may update the IR. Finally, each pair is set in the current `process-environment`, making them environment variables in the Emacs process.
+On the way out, we start with two things: the stdout that was produced by
+running `printenv` in the bash process, and the current `process-environment` in
+Emacs. The bash stdout is parsed back into a list of pairs (`IR_1`) and all
+post-eval functions (if any) are run, which may update `IR_1`. Emacs' current
+`process-environment` is parsed into a separate list of pairs (`IR_2`). Then,
+the two IRs are compared, and only elements in `IR_1` that are not in `IR_2` are
+kept (`IR_3`). Finally, each pair in `IR_3` is set in the current
+`process-environment`.
 
 ```mermaid
 flowchart LR
-  stdout -- parse --> IR1[IR]
-  IR1 -- post-eval-functions --> IR1
-  IR1 -- diff --> IR2[IR]
-  cur[current environment] -- diff --> IR2
-  IR2 -- setenv each pair --> done
+  stdout -- parse --> IR_1
+  IR_1 -- post-eval-functions --> IR_1
+  cur[current environment] -- parse --> IR_2
+  IR_1 -- diff --> IR_3
+  IR_2 -- diff --> IR_3
+  IR_3 -- setenv each pair --> done
 ```
 
 ## See Also

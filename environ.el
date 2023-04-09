@@ -20,7 +20,7 @@
 
 ;;; Commentary:
 
-;; See the README.md in this package, which is also visible at:
+;; See the README.md in this package, which is visible at:
 ;; https://github.com/cfclrk/env
 
 ;;; Code:
@@ -44,22 +44,24 @@
   "The directory where this project's source code is located.")
 
 (defcustom environ-dir (expand-file-name "~/")
-  "Directory with env files."
+  "Directory to prompt for env files.
+This varibale is only used by `environ-set-file' and `environ-unset-file'
+when they are run interactively."
   :group 'env
   :type 'directory)
 
 (defcustom environ-pre-eval-functions nil
-  "List of functions to run before shell evaluation.
-Each function takes a list of pairs and returns a list of pairs."
+  "A list of functions to run before shell evaluation.
+Each function takes a list of pairs and returns an updated list of pairs."
   :group 'env
   :type 'hook)
 
 (defcustom environ-post-eval-functions
-  '(environ-post-eval-ignore-bash-vars)
-  "List of functions to run after shell evaluation.
+  '(environ-ignore-bash-vars)
+  "A list of functions to run after shell evaluation.
 Each function takes a list of pairs and returns an updated list of pairs."
   :group 'env
-  :type '(hook :options (environ-post-eval-ignore-bash-vars)))
+  :type '(hook :options (environ-ignore-bash-vars)))
 
 ;;; Files
 
@@ -70,14 +72,18 @@ When used interactively, prompts for the file to load. The prompt begins in
 `environ-dir'. When used from elisp, FILE-PATH can either be absolute or
 relative to `default-directory'."
   (interactive (list (read-file-name "ENV file: " environ-dir)))
-  (environ-set-str (f-read-text file-path)))
+  (-> file-path
+      f-read-text
+      environ-set-str))
 
 ;;;###autoload
 (defun environ-unset-file (file-path)
   "Unset the environment variables defined in FILE-PATH.
 See the documentation for `environ-set-file'."
   (interactive (list (read-file-name "ENV file: " environ-dir)))
-  (environ-unset-str (f-read-text file-path)))
+  (-> file-path
+      f-read-text
+      environ-unset-str))
 
 ;;; Strings
 
@@ -85,16 +91,18 @@ See the documentation for `environ-set-file'."
   "Set environment variables defined by the given string STR.
 Parse STR like an env file. STR is split into newline-delimited lines,
 where each line is a key/value pair."
-  (environ-set-pairs
-   (environ--str-to-pairs str)))
+  (-> str
+      environ--str-to-pairs
+      environ-set-pairs))
 
 (defun environ-unset-str (str)
   "Unset environment variables defined by string STR.
 Parse STR like an env file. STR is split into newline-delimited pairs,
 where each line is a key/value pair. The value of each pair is discarded,
 as the environment variable will be unset regardless of its value."
-  (environ-unset-pairs
-   (environ--str-to-pairs str)))
+  (-> str
+      environ--str-to-pairs
+      environ-unset-str))
 
 ;;; Pairs
 
@@ -133,7 +141,6 @@ will be unset regardless of its value."
 
 (defun environ-unset-names (names)
   "Unset environment variables with the given NAMES.
-
 NAMES is a list of environment variable names which may or may not be
 currently set. This function removes each name from `process-environment'
 if it is set."
@@ -142,7 +149,6 @@ if it is set."
 ;;;###autoload
 (defun environ-unset-name (name)
   "Unset the environment variable NAME.
-
 Unset the given environment variable by removing it from
 `process-environment' if it is there. Note that calling `setenv' with a
 prefix argument can unset a variable by setting its value to nil, but the
@@ -171,14 +177,9 @@ the variable from `process-environment'."
   "Return a list of pairs of LINES."
   (--map (s-split "=" it) lines))
 
-;;; Pre-eval  functions
-
 ;;; Post-eval functions
 
-;; Some pre-made post-eval functions. A post-eval filter is a function that takes
-;; a list of pairs and returns a list of pairs.
-
-(defun environ-post-eval-ignore-bash-vars (pairs)
+(defun environ-ignore-bash-vars (pairs)
   "Remove DISPLAY, PWD, SHLVL, and _ from PAIRS.
 Bash initializes these environment varibales in every bash process. If any
 of these are different in the bash subprocess, it's probably not something

@@ -20,6 +20,7 @@ This package uses a bash subprocess to fully expand variables, which means you c
   - [environ-get-names](#environ-get-names)
   - [environ-unset-names `(names)`](#environ-unset-names-names)
   - [environ-unset-name `(name)`](#environ-unset-name-name)
+- [Configuration](#configuration)
 - [File Format](#file-format)
 - [Usage from org-mode](#usage-from-org-mode)
 - [How it Works](#how-it-works)
@@ -196,6 +197,45 @@ variable by setting its value to nil, but the variable remains in
 `process-environment`. This function completely removes the variable from
 `process-environment`.
 
+## Configuration
+
+### `environ-dir`
+
+Directory to prompt for env files.
+
+This variable is only used by `environ-set-file` and `environ-unset-file` when
+they are run interactively. Defauts to `(expand-file-name "~/")`.
+
+```emacs-lisp
+(setq environ-dir (exapnd-file-name "~/.env"))
+```
+
+### environ-pre-eval-functions
+
+A list of functions to run before shell evaluation.
+
+Each function takes a list of pairs and returns an updated list of pairs.
+
+```emacs-lisp
+(setq environ-pre-eval-functions '((lambda (pairs)
+                                     (cons '("A" "a") pairs))
+                                   (lambda (pairs)
+                                     (cons '("B" "b") pairs))))
+```
+
+### environ-post-eval-functions
+
+A list of functions to run after shell evaluation.
+
+Each function takes a list of pairs and returns an updated list of pairs.
+
+```emacs-lisp
+(setq environ-post-eval-functions '((lambda (pairs)
+                                      (cons '("A" "a") pairs))
+                                    (lambda (pairs)
+                                      (cons '("B" "b") pairs))))
+```
+
 ## File Format
 
 Each line in an env file must be in a `KEY=VALUE` format, with one entry per
@@ -215,8 +255,8 @@ E=~/cats
 
 ## Usage from org-mode
 
-The example below shows a convenient way to declare and set environment
-variables in an `org` document using a table:
+This example shows one way to set environment variables in an `org` document
+using a table:
 
 ```org
 #+NAME: env
@@ -241,19 +281,21 @@ You can think of each function in terms of two phases: the way in, and the way o
 
 ```mermaid
 flowchart LR
-    input -- parse --> IR
+    env-file[env file] -- parse --> IR
     IR -- pre-eval-functions --> IR
-    IR -- build-script --> bash-script
-    bash-script -- invoke --> stdout
+    IR -- build script --> script[bash script]
+    script -- run script --> stdout
 ```
 
-On the way out, we start with the stdout returned by running `printenv` in the bash process. The output is parsed back into a list of pairs (the IR) and all post-eval functions (if any) are run, which may update the IR. Finally, each pair is set in the current `process-environment`, making them environment variables in the Emacs process.
+On the way out, we start with the stdout that was produced by running `printenv` in the bash process. The output is parsed back into a list of pairs (the IR) and all post-eval functions (if any) are run, which may update the IR. Finally, each pair is set in the current `process-environment`, making them environment variables in the Emacs process.
 
 ```mermaid
 flowchart LR
-  stdout -- parse --> IR
-  IR -- post-eval-functions --> IR
-  IR -- setenv --> done
+  stdout -- parse --> IR1[IR]
+  IR1 -- post-eval-functions --> IR1
+  IR1 -- diff --> IR2[IR]
+  cur[current environment] -- diff --> IR2
+  IR2 -- setenv each pair --> done
 ```
 
 ## See Also

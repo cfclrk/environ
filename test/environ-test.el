@@ -125,7 +125,7 @@ REL-PATH is a path relative to this project's root."
 
 (ert-deftest environ--eval-and-diff-with-post-functions ()
   (let ((process-environment '())
-        (environ-post-eval-functions '(environ-post-eval-ignore-bash-vars
+        (environ-post-eval-functions '(environ-ignore-bash-vars
                                        (lambda (pairs)
                                         (cons '("A" "a") pairs))
                                        (lambda (pairs)

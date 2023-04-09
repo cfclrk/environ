@@ -1,7 +1,7 @@
 ;;; environ.el --- API for environment variables and env files -*- lexical-binding: t; -*-
 
 ;; Author: Chris Clark <cfclrk@gmail.com>
-;; Version: 0.0.0
+;; Version: 0.0.1
 ;; Package-Requires: ((emacs "24.1") (dash "2.17.0") (f "0.20.0") (s "1.12.0"))
 ;; URL: https://github.com/cfclrk/env
 ;; Keywords: environment

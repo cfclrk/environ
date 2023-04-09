@@ -3,7 +3,8 @@
 An Emacs package that provides some helpful functions for working with
 environment variables and env files.
 
-This package uses a bash subprocess to fully expand variables, which means you can leverage the power of bash to define variables.
+This package uses a bash subprocess to fully expand variables, which means you
+can leverage the power of bash to define variables.
 
 ## Table of Contents
 
@@ -214,7 +215,8 @@ they are run interactively. Defauts to `(expand-file-name "~/")`.
 
 A list of functions to run before shell evaluation.
 
-Each function takes a list of pairs and returns an updated list of pairs. Defaults to `nil`.
+Each function takes a list of pairs and returns an updated list of pairs.
+Defaults to `nil`.
 
 ```emacs-lisp
 (setq environ-pre-eval-functions
@@ -228,7 +230,8 @@ Each function takes a list of pairs and returns an updated list of pairs. Defaul
 
 A list of functions to run after shell evaluation.
 
-Each function takes a list of pairs and returns an updated list of pairs. Defaults to `'(environ-ignore-bash-vars)`.
+Each function takes a list of pairs and returns an updated list of pairs.
+Defaults to `'(environ-ignore-bash-vars)`.
 
 ```emacs-lisp
 (setq environ-post-eval-functions
@@ -279,7 +282,11 @@ This package works by evaluating the provided input in a bash subprocess,
 and then returning the difference between current environment and the subprocess
 environment.
 
-You can think of each function in terms of two phases: the way in, and the way out. On the way in, input is parsed into a list of pairs (the IR) if it isn't already in that form. Then, all pre-eval-functions (if any) are run, which may update the IR. The IR is then assembled into a bash script, executed, and then the result of running `printenv` in the bash subprocess is returned.
+You can think of each function in terms of two phases: the way in, and the way
+out. On the way in, input is parsed into a list of pairs (the IR) if it isn't
+already in that form. Then, all pre-eval-functions (if any) are run, which may
+update the IR. The IR is then assembled into a bash script, executed, and then
+the result of running `printenv` in the bash subprocess is returned.
 
 ```mermaid
 flowchart LR

@@ -35,4 +35,4 @@ jobs:
 
     - name: Lint the project
       run: |
-        eldev -p -vT lint
+        eldev -T lint

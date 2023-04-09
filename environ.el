@@ -1,9 +1,12 @@
-;;; environ.el --- Utilities for setting env variables -*- lexical-binding: t; -*-
+;;; environ.el --- API for environment variables and env files -*- lexical-binding: t; -*-
 
 ;; Author: Chris Clark <cfclrk@gmail.com>
-;; Version: 0.1
+;; Version: 0.0.0
 ;; Package-Requires: ((emacs "24.1") (dash "2.17.0") (f "0.20.0") (s "1.12.0"))
 ;; URL: https://github.com/cfclrk/env
+;; Keywords: environment
+
+;; This file is NOT part of GNU Emacs.
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -19,6 +22,12 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
+
+;; An Emacs package that provides some helpful functions for working with
+;; environment variables and env files.
+
+;; This package uses a bash subprocess to fully expand variables, which means
+;; you can leverage the power of bash to define variables.
 
 ;; See the README.md in this package, which is visible at:
 ;; https://github.com/cfclrk/env

@@ -3,3 +3,5 @@
 (eldev-use-package-archive 'melpa)
 
 (eldev-use-plugin 'autoloads)
+
+(setf eldev-release-allowed-branch "main")

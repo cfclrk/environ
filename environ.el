@@ -210,9 +210,9 @@ This runs all pre-eval-functions and post-eval-functions."
 (defun environ--eval-with-pre-post-functions (pairs)
   "Eval PAIRS along with all pre-eval and post-eval functions."
   (->> pairs
-       (funcall (apply '-compose environ-pre-eval-functions))
+       (funcall (apply #'-compose environ-pre-eval-functions))
        (environ--eval)
-       (funcall (apply '-compose environ-post-eval-functions))))
+       (funcall (apply #'-compose environ-post-eval-functions))))
 
 (defun environ--eval (pairs)
   "Eval PAIRS in a bash subprocess.

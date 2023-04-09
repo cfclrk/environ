@@ -36,10 +36,10 @@ need to install from source. This can be achieved easily with e.g. [straight][],
 For example, using elpaca:
 
 ```emacs-lisp
-(use-package env
-  :elpaca (env
+(use-package environ
+  :elpaca (environ
            :host github
-           :repo "cfclrk/env")
+           :repo "cfclrk/environ")
   :config
   (setq environ-dir (expand-file-name "~/.env/")))
 ```

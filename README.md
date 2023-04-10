@@ -1,3 +1,7 @@
+[![MELPA](https://melpa.org/packages/environ-badge.svg)][1]
+
+[1]: http://melpa.org/#/environ
+
 # environ
 
 An Emacs package that provides some helpful functions for working with
@@ -8,7 +12,6 @@ can leverage the power of bash to define variables.
 
 ## Table of Contents
 
-- [Installation](#installation)
 - [Example Usage](#example-usage)
 - [API](#api)
   - [environ-set-file `(file-path)`](#environ-set-file-file-path)
@@ -26,27 +29,6 @@ can leverage the power of bash to define variables.
 - [Usage from org-mode](#usage-from-org-mode)
 - [How it Works](#how-it-works)
 - [See Also](#see-also)
-
-## Installation
-
-This package is currently not available in a package archive, so for now, you
-need to install from source. This can be achieved easily with e.g. [straight][],
-[elpaca][], or [package-vc-install][].
-
-For example, using elpaca:
-
-```emacs-lisp
-(use-package environ
-  :elpaca (environ
-           :host github
-           :repo "cfclrk/environ")
-  :config
-  (setq environ-dir (expand-file-name "~/.env/")))
-```
-
-[straight]: https://github.com/radian-software/straight.el
-[elpaca]: https://github.com/progfolio/elpaca
-[package-vc-install]: https://emacsredux.com/blog/2023/03/12/install-a-package-from-a-vcs-repository/
 
 ## Example Usage
 

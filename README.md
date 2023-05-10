@@ -187,10 +187,10 @@ variable by setting its value to nil, but the variable remains in
 Directory to prompt for env files.
 
 This variable is only used by `environ-set-file` and `environ-unset-file` when
-they are run interactively. Defauts to `(expand-file-name "~/")`.
+they are run interactively. Defaults to `(expand-file-name "~/")`.
 
 ```emacs-lisp
-(setq environ-dir (exapnd-file-name "~/.env"))
+(setq environ-dir (expand-file-name "~/.env"))
 ```
 
 ### environ-pre-eval-functions

@@ -60,8 +60,7 @@ When used interactively, prompts for the file to load. The prompt begins in
 relative to `default-directory`.
 
 ```emacs-lisp
-(environ-set-file
-  (expand-file-name "~/.env/foo"))
+(environ-set-file (expand-file-name "~/.env/foo"))
 ```
 
 ### environ-unset-file `(file-path)`
@@ -71,8 +70,7 @@ relative to `default-directory`.
 See the documentation for `environ-set-file`.
 
 ```emacs-lisp
-(environ-unset-file
- (expand-file-name "~/.env/foo"))
+(environ-unset-file (expand-file-name "~/.env/foo"))
 ```
 
 ### environ-set-str `(str)`
@@ -83,9 +81,9 @@ Parse STR like an env file. STR is split into newline-delimited lines, where
 each line is a key/value pair.
 
 ```emacs-lisp
-(environ-set-str "FOO=foo\nBAR=bar")
-(getenv "FOO") ;; => "foo"
-(getenv "BAR") ;; => "bar"
+(environ-set-str "A=foo\nB=$A-bar")
+(getenv "A") ;; => "foo"
+(getenv "B") ;; => "foo-bar"
 ```
 
 ### environ-unset-str `(str)`
@@ -97,7 +95,7 @@ key of each pair is the environment variable name. The value of each pair is
 discarded, as the environment variable will be unset regardless of its value.
 
 ```emacs-lisp
-(environ-unset-str "FOO=foo\nBAR=bar")
+(environ-unset-str "A=foo\nB=$A-bar")
 (getenv "FOO") ;; => nil
 (getenv "BAR") ;; => nil
 ```

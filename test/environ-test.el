@@ -133,11 +133,10 @@ REL-PATH is a path relative to this project's root."
 
 (ert-deftest environ--eval-pairs-interpolate ()
   "We should be able to interpolate values."
-  (let* ((process-environment '())
-         (evald-pairs (environ--eval-and-diff '(("FOO" "foo")
-                                                ("BAR" "$FOO-bar")))))
+  (let* ((process-environment '()))
     (should (-same-items? '(("FOO" "foo") ("BAR" "foo-bar"))
-                          evald-pairs))))
+                          (environ--eval-and-diff '(("FOO" "foo")
+                                                    ("BAR" "$FOO-bar")))))))
 
 (ert-deftest environ--eval-pairs-quotes ()
   "Surrounding value with single quotes should prevent intepolation."

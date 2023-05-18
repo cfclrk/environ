@@ -25,6 +25,9 @@ can leverage the power of bash to define variables.
   - [environ-unset-names `(names)`](#environ-unset-names-names)
   - [environ-unset-name `(name)`](#environ-unset-name-name)
 - [Configuration](#configuration)
+  - [environ-dir](#environ-dir)
+  - [environ-pre-eval-functions](#environ-pre-eval-functions)
+  - [environ-post-eval-functions](#environ-post-eval-functions)
 - [File Format](#file-format)
 - [Usage from org-mode](#usage-from-org-mode)
 - [How it Works](#how-it-works)
@@ -180,7 +183,7 @@ variable by setting its value to nil, but the variable remains in
 
 ## Configuration
 
-### `environ-dir`
+### environ-dir
 
 Directory to prompt for env files.
 

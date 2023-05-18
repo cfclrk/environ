@@ -61,14 +61,16 @@ when they are run interactively."
 
 (defcustom environ-pre-eval-functions nil
   "A list of functions to run before shell evaluation.
-Each function takes a list of pairs and returns an updated list of pairs."
+Each function must accept a list of pairs and return an updated list of
+pairs."
   :group 'env
   :type 'hook)
 
 (defcustom environ-post-eval-functions
   '(environ-ignore-bash-vars)
   "A list of functions to run after shell evaluation.
-Each function takes a list of pairs and returns an updated list of pairs."
+Each function must accept a list of pairs and return an updated list of
+pairs."
   :group 'env
   :type '(hook :options (environ-ignore-bash-vars)))
 

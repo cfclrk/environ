@@ -35,21 +35,19 @@ REL-PATH is a path relative to this project's root."
   (let ((process-environment '("A=a" "B=b" "C=C" "Z=z"))
         (test-file (environ-project-file "test/examples/simple")))
     (environ-unset-file test-file)
-    (should (equal '("Z=z") process-environment))))
+    (should (-same-items? '("Z=z") process-environment))))
 
 (ert-deftest environ-set-str ()
   "Test running `environ-set-str'."
-  (let ((process-environment '())
-        (test-str "A=a\nB=b"))
-    (environ-set-str test-str)
+  (let ((process-environment '()))
+    (environ-set-str "A=a\nB=b")
     (should (equal "a" (getenv "A")))
     (should (equal "b" (getenv "B")))))
 
 (ert-deftest environ-unset-str ()
   "Test running `environ-unset-str'."
-  (let ((process-environment '("FOO=foo" "BAR=bar" "CATS=cats"))
-        (test-str "FOO=foo\nBAR=bar"))
-    (environ-unset-str test-str)
+  (let ((process-environment '("FOO=foo" "BAR=bar" "CATS=cats")))
+    (environ-unset-str "FOO=foo\nBAR=bar")
     (should (-same-items? '("CATS=cats") process-environment))))
 
 (ert-deftest environ-set-pairs ()
@@ -76,7 +74,7 @@ REL-PATH is a path relative to this project's root."
     (should (equal nil (getenv "FOO")))
     (should (equal nil (getenv "BAR")))
     (should (equal "baz" (getenv "BAZ")))
-    (should (equal '("BAZ=baz") process-environment))))
+    (should (-same-items? '("BAZ=baz") process-environment))))
 
 (ert-deftest environ--set-pair ()
   "Test running `environ--set-pair' to set a single environment variable."
@@ -98,10 +96,6 @@ REL-PATH is a path relative to this project's root."
     (environ-unset-name "FOO")
     (should (equal nil (getenv "FOO")))))
 
-(let ((process-environment '()))
-  (environ--eval-and-diff '(("FOO" "~/foo")
-                            ("BAR" "bar"))))
-
 (ert-deftest environ--eval-and-diff-simple ()
   "We should be able to set simple values."
   (let* ((process-environment '())
@@ -120,8 +114,8 @@ REL-PATH is a path relative to this project's root."
                             ("B" "b")
                             ("FOO" "foo")
                             ("BAR" "bar"))
-             (environ--eval-and-diff
-              '(("FOO" "foo") ("BAR" "bar")))))))
+                          (environ--eval-and-diff '(("FOO" "foo")
+                                                    ("BAR" "bar")))))))
 
 (ert-deftest environ--eval-and-diff-with-post-functions ()
   (let ((process-environment '())
@@ -134,8 +128,8 @@ REL-PATH is a path relative to this project's root."
                             ("B" "b")
                             ("FOO" "foo")
                             ("BAR" "bar"))
-             (environ--eval-and-diff
-              '(("FOO" "foo") ("BAR" "bar")))))))
+                          (environ--eval-and-diff
+                           '(("FOO" "foo") ("BAR" "bar")))))))
 
 (ert-deftest environ--eval-pairs-interpolate ()
   "We should be able to interpolate values."
@@ -147,11 +141,9 @@ REL-PATH is a path relative to this project's root."
 
 (ert-deftest environ--eval-pairs-quotes ()
   "Surrounding value with single quotes should prevent intepolation."
-  (let* ((process-environment '())
-         (evald-pairs (environ--eval-and-diff '(("FOO" "'f$oo'")
-                                                ("B" "'R$%!$KP$'")))))
+  (let ((process-environment '()))
     (should (-same-items? '(("FOO" "f$oo") ("B" "R$%!$KP$"))
-                          evald-pairs))))
-
+                          (environ--eval-and-diff '(("FOO" "'f$oo'")
+                                                    ("B" "'R$%!$KP$'")))))))
 
 ;;; environ-test.el ends here

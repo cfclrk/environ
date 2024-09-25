@@ -265,11 +265,16 @@ This package works by evaluating the provided input in a bash subprocess,
 and then returning the difference between current environment and the subprocess
 environment.
 
-You can think of each function in terms of two phases: the way in, and the way
-out. On the way in, input is parsed into a list of pairs (the IR) if it isn't
-already in that form. Then, all pre-eval-functions (if any) are run, which may
-update the IR. The IR is then assembled into a bash script, executed, and then
-the result of running `printenv` in the bash subprocess is returned.
+You can think of each function in terms of two phases:
+
+1. Run bash - (parse input, create a bash script, and run it)
+2. Update Emacs env vars - (parse the bash output and set each env var)
+
+In the first phase, input is parsed into a list of pairs (the `IR`) if it isn't
+already in that form. Then, pre-eval-functions (if any) are run, which creates a
+new list of pairs (also `IR`). The `IR` structure is then assembled into a bash
+script and executed. The last thing the bash script does is run `printenv`, so
+that's what the stdout is.
 
 ```mermaid
 flowchart LR
@@ -279,14 +284,14 @@ flowchart LR
     script -- run script --> stdout
 ```
 
-On the way out, we start with two things: the stdout that was produced by
-running `printenv` in the bash process, and the current `process-environment` in
-Emacs. The bash stdout is parsed back into a list of pairs (`IR_1`) and all
-post-eval functions (if any) are run, which may update `IR_1`. Emacs' current
-`process-environment` is parsed into a separate list of pairs (`IR_2`). Then,
-the two IRs are compared, and only elements in `IR_1` that are not in `IR_2` are
-kept (`IR_3`). Finally, each pair in `IR_3` is set in the current
-`process-environment`.
+In the second phase, we start with two inputs: the stdout that was produced by
+running `printenv` in the bash process, and the current Emacs
+`process-environment`. The bash stdout is parsed back into a list of pairs
+(`IR_1`) and all post-eval functions (if any) are run, which may update `IR_1`.
+Emacs' current `process-environment` is parsed into a separate list of pairs
+(`IR_2`). Then, the two IRs are compared, and only elements in `IR_1` that are
+not in `IR_2` are kept (`IR_3`). Finally, each pair in `IR_3` is set in the
+current `process-environment`.
 
 ```mermaid
 flowchart LR

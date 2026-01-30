@@ -16,6 +16,7 @@ can leverage the power of bash to define variables.
 - [API](#api)
   - [environ-set-file `(file-path)`](#environ-set-file-file-path)
   - [environ-unset-file `(file-path)`](#environ-unset-file-file-path)
+  - [environ-read-file `(file-path)`](#environ-read-file-file-path)
   - [environ-set-str `(str)`](#environ-set-str-str)
   - [environ-unset-str `(str)`](#environ-unset-str-str)
   - [environ-get-pairs](#environ-get-pairs)
@@ -74,6 +75,14 @@ See the documentation for `environ-set-file`.
 
 ```emacs-lisp
 (environ-unset-file (expand-file-name "~/.env/foo"))
+```
+
+### environ-read-file `(file-path)`
+
+Read the env file at FILE-PATH into a list of pairs.
+
+```emacs-lisp
+(environ-read-file (expand-file-name "~/.env/foo"))
 ```
 
 ### environ-set-str `(str)`

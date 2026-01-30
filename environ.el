@@ -96,6 +96,12 @@ See the documentation for `environ-set-file'."
       f-read-text
       environ-unset-str))
 
+(defun environ-read-file (file-path)
+  "Read the env file at FILE-PATH into a list of pairs."
+  (-> file-path
+      f-read-text
+      environ-str-to-pairs))
+
 ;;; Strings
 
 (defun environ-set-str (str)

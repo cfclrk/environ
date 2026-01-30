@@ -199,6 +199,10 @@ For example:
   "Return a list of pairs of LINES."
   (--map (s-split "=" it) lines))
 
+(defun environ-pairs-to-lines (pairs)
+  "Given a list of PAIRS, return a list of lines."
+  (--map (s-join "=" it) pairs))
+
 ;;; Post-eval functions
 
 (defun environ-ignore-bash-vars (pairs)

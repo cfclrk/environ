@@ -103,7 +103,7 @@ See the documentation for `environ-set-file'."
 Parse STR like an env file. STR is split into newline-delimited lines,
 where each line is a key/value pair."
   (-> str
-      environ--str-to-pairs
+      environ-str-to-pairs
       environ-set-pairs))
 
 (defun environ-unset-str (str)
@@ -112,14 +112,14 @@ Parse STR like an env file. STR is split into newline-delimited pairs,
 where each line is a key/value pair. The value of each pair is discarded,
 as the environment variable will be unset regardless of its value."
   (-> str
-      environ--str-to-pairs
+      environ-str-to-pairs
       environ-unset-pairs))
 
 ;;; Pairs
 
 (defun environ-get-pairs ()
   "Return all current environment variables as a list of pairs."
-  (environ--lines-to-pairs process-environment))
+  (environ-lines-to-pairs process-environment))
 
 (defun environ-set-pairs (pairs)
   "Set environment variables defined by the given PAIRS.
@@ -177,14 +177,19 @@ the variable from `process-environment'."
 
 ;;;; Conversion functions
 
-(defun environ--str-to-pairs (str)
-  "Parse STR into a list of pairs."
+(defun environ-str-to-pairs (str)
+  "Parse STR into a list of pairs.
+
+For example:
+
+  (environ-str-to-pairs \"A=a\nB=b\")
+  ;;=> ((A a) (B b))"
   (-> str
       s-trim
       s-lines
-      environ--lines-to-pairs))
+      environ-lines-to-pairs))
 
-(defun environ--lines-to-pairs (lines)
+(defun environ-lines-to-pairs (lines)
   "Return a list of pairs of LINES."
   (--map (s-split "=" it) lines))
 
@@ -205,7 +210,7 @@ you care about. This is the default post-eval function."
 (defun environ--eval-and-diff (pairs)
   "Eval PAIRS and diff the result with the current environment.
 This runs all pre-eval-functions and post-eval-functions."
-  (let ((cur-pairs (environ--lines-to-pairs process-environment))
+  (let ((cur-pairs (environ-lines-to-pairs process-environment))
         (new-pairs (environ--eval-with-pre-post-functions pairs)))
     (-difference new-pairs cur-pairs)))
 
@@ -222,7 +227,7 @@ Return a list of pairs representing the resulting subprocess environment."
   (-> pairs
       environ--build-script
       environ--run-script
-      environ--str-to-pairs))
+      environ-str-to-pairs))
 
 (defun environ--build-script (pairs)
   "Turn PAIRS into a sh script.

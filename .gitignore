@@ -2,3 +2,4 @@
 /.eldev
 /Eldev-local
 environ-autoloads.el
+/.agent-shell/

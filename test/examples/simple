@@ -3,3 +3,4 @@ B="bar"
 C='R$%!$KP$'
 D=$A-bar
 E=~/cats
+# This is a comment

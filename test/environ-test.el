@@ -42,7 +42,13 @@ REL-PATH is a path relative to this project's root."
   (let ((process-environment '()))
     (environ-set-str "A=a\nB=b")
     (should (equal "a" (getenv "A")))
-    (should (equal "b" (getenv "B")))))
+    (should (equal "b" (getenv "B"))))
+
+  ;; Lines that start with '#' (comments) are ignored
+  (let ((process-environment '()))
+    (environ-set-str "A=a\nB=b\n#C=c")
+    (should (-same-items? '("A=a" "B=b")
+                          process-environment))))
 
 (ert-deftest environ-unset-str ()
   "Test running `environ-unset-str'."

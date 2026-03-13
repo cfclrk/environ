@@ -235,10 +235,10 @@ Defaults to `'(environ-ignore-bash-vars)`.
 
 ## File Format
 
-Each line in an env file must be in a `KEY=VALUE` format, with one entry per
-line. This package invokes an `bash` shell to interpret the file, so shellisms
-should work (like `~` expansion or using single quotes to prevent variable
-interpolation).
+Each non-empty, non-comment line in an env file must be in a `KEY=VALUE`
+format, with one entry per line. This package invokes a `bash` shell to
+interpret the file, so shellisms should work (like `~` expansion or using
+single quotes to prevent variable interpolation).
 
 For example:
 
@@ -248,6 +248,7 @@ B="bar"
 C='R$%!$KP$'
 D=$A-bar
 E=~/cats
+# This line is a comment and is ignored
 ```
 
 ## Usage from org-mode

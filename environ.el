@@ -190,9 +190,13 @@ For example:
 
   (environ-str-to-pairs \"A=a\nB=b\")
   ;;=> ((A a) (B b))"
-  (-> str
+  (->> str
       s-trim
       s-lines
+      (--filter (let ((line (s-trim it)))
+                 (and (not (s-blank? line))
+                      (not (s-starts-with? "#" line))
+                      (s-contains? "=" line))))
       environ-lines-to-pairs))
 
 (defun environ-lines-to-pairs (lines)
